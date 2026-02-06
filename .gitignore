@@ -1,0 +1,22 @@
+# Build artifacts
+build/
+out/
+*.log
+*.vcd
+*.fst
+*.wlf
+
+# Simulator generated
+sim/work/
+sim/csrc/
+sim/*.exe
+
+# Editor / OS junk
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
