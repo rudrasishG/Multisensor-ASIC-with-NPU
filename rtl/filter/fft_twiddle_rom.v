@@ -1,26 +1,16 @@
-//==============================================================================
-// Module: fft_twiddle_rom
-// Description: Twiddle factor lookup table for 512-point FFT
-//
-// Provides complex twiddle factors W_N^k = e^(-j*2*pi*k/N) where N=512
-// Twiddle factors are the complex exponentials used in FFT butterfly operations
-//
-// For a 512-point FFT with 9 stages, we need twiddle factors with different
-// granularities for each stage. Stage s uses W_512^(k*2^s) where k is the
-// butterfly index within that stage.
-//
-// Rather than storing all possible values, we store one quarter cycle (128 values)
-// and use symmetry properties of sine/cosine to generate all required values.
-//
-// Design Notes:
-// - Stores only positive quarter-wave (0 to pi/2) values
-// - Uses symmetry: sin(x) = cos(pi/2-x), sin(pi-x) = sin(x), etc.
-// - ROM initialized with pre-computed values
-// - Could alternatively use CORDIC for on-the-fly computation
-//
-// Author: Generated for Sensor Fusion ASIC Project  
-// Date: January 2026
-//==============================================================================
+/* Provides complex twiddle factors W_N^k = e^(-j*2*pi*k/N) where N=512
+ Twiddle factors are the complex exponentials used in FFT butterfly operations
+
+ For a 512-point FFT with 9 stages, we need twiddle factors with different
+ granularities for each stage. Stage s uses W_512^(k*2^s) where k is the  butterfly index within that stage.
+
+ Rather than storing all possible values, we store one quarter cycle (128 values)  and use symmetry properties of sine/cosine to generate all required values.
+ Design Notes:
+ - Stores only positive quarter-wave (0 to pi/2) values
+- Uses symmetry: sin(x) = cos(pi/2-x), sin(pi-x) = sin(x), etc.
+ - ROM initialized with pre-computed values
+ - Could alternatively use CORDIC for on-the-fly computation*/
+
 
 module fft_twiddle_rom #(
     parameter DATA_WIDTH = 16,

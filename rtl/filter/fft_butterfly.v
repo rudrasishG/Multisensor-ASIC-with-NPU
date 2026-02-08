@@ -1,25 +1,12 @@
-//==============================================================================
-// Module: fft_butterfly
-// Description: Radix-2 FFT butterfly computation unit
-//
-// Implements the basic radix-2 butterfly operation:
-//   A' = A + W*B
-//   B' = A - W*B
-//
-// Where W is the complex twiddle factor (cos - j*sin)
-// This is the fundamental building block of the FFT algorithm.
-//
-// The butterfly performs complex multiplication and addition/subtraction.
-// Complex multiplication: (a + jb) * (c + jd) = (ac - bd) + j(ad + bc)
-//
-// Design Notes:
-// - Uses pipelined stages for complex multiplication
-// - Fixed-point arithmetic with proper scaling to prevent overflow
-// - One clock cycle latency
-//
-// Author: Generated for Sensor Fusion ASIC Project
-// Date: January 2026
-//==============================================================================
+/* Implements the basic radix-2 butterfly operation:
+  A' = A + W*B
+  B' = A - W*B
+ Where W is the complex twiddle factor (cos - j*sin)
+ This is the fundamental building block of the FFT algorithm.
+
+ The butterfly performs complex multiplication and addition/subtraction.
+ Complex multiplication: (a + jb) * (c + jd) = (ac - bd) + j(ad + bc)*/
+
 
 module fft_butterfly #(
     parameter DATA_WIDTH = 16
@@ -46,12 +33,7 @@ module fft_butterfly #(
     output reg signed [DATA_WIDTH-1:0] out_b_imag
 );
 
-    //==========================================================================
-    // Complex Multiplication: W * B = (Wr + jWi) * (Br + jBi)
-    // Result_real = Wr*Br - Wi*Bi
-    // Result_imag = Wr*Bi + Wi*Br
-    //==========================================================================
-    
+
     // Extended width for multiplication results
     wire signed [2*DATA_WIDTH-1:0] mult_wr_br;  // Wr * Br
     wire signed [2*DATA_WIDTH-1:0] mult_wi_bi;  // Wi * Bi
@@ -72,11 +54,6 @@ module fft_butterfly #(
     assign wb_real = (mult_wr_br - mult_wi_bi) >>> (DATA_WIDTH - 1);
     assign wb_imag = (mult_wr_bi + mult_wi_br) >>> (DATA_WIDTH - 1);
     
-    //==========================================================================
-    // Butterfly Addition and Subtraction
-    // A' = A + W*B
-    // B' = A - W*B
-    //==========================================================================
     
     // Extended width to handle potential overflow
     wire signed [DATA_WIDTH:0] sum_real;
@@ -89,10 +66,7 @@ module fft_butterfly #(
     assign diff_real = in_a_real - wb_real;
     assign diff_imag = in_a_imag - wb_imag;
     
-    //==========================================================================
-    // Output Registration with Scaling
-    // Divide by 2 (right shift by 1) to prevent bit growth across stages
-    //==========================================================================
+
     
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin

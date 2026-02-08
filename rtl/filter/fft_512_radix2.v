@@ -1,31 +1,4 @@
-//==============================================================================
-// Module: fft_512_radix2
-// Description: Complete 512-point sequential radix-2 FFT processor
-//
-// Implements a complete 512-point Fast Fourier Transform using the Cooley-Tukey
-// radix-2 decimation-in-time algorithm. The implementation is sequential, reusing
-// a single butterfly computation unit across multiple clock cycles to minimize
-// logic resource usage.
-//
-// The FFT operates on complex input data (real and imaginary components) and
-// produces complex output in frequency domain. For audio applications, real input
-// is zero-padded in the imaginary component.
-//
-// Computation takes log2(512) = 9 stages with 256 butterflies per stage, totaling
-// approximately 2,300 butterfly operations. With 2 cycles per butterfly (1 for
-// compute, 1 for memory), total time is about 4,600 clock cycles.
-//
-// Design Notes:
-// - Uses dual-port RAM for ping-pong buffering between stages
-// - Twiddle factors computed via ROM lookup with symmetry optimization
-// - Bit-reversal addressing handled during input loading
-// - Fixed-point arithmetic with per-stage scaling to prevent overflow
-// - Fully pipelined butterfly unit provides 1-cycle throughput
-//
-// Author: Generated for Sensor Fusion ASIC Project
-// Date: January 2026
-//==============================================================================
-
+/*Implements a complete 512-point Fast Fourier Transform using the Cooley-Tukey radix-2 decimation-in-time algorithm. The implementation is sequential, reusing a single butterfly computation unit across multiple clock cycles to minimize logic resource usage. Computation takes log2(512) = 9 stages with 256 butterflies per stage, totaling approximately 2,300 butterfly operations. With 2 cycles per butterfly (1 for compute, 1 for memory), total time is about 4,600 clock cycles. */
 module fft_512_radix2 #(
     parameter DATA_WIDTH = 16,
     parameter FFT_SIZE = 512,
@@ -54,9 +27,7 @@ module fft_512_radix2 #(
     output reg busy
 );
 
-    //==========================================================================
-    // State Machine Definitions
-    //==========================================================================
+   //state encoding
     
     localparam [2:0]
         STATE_IDLE    = 3'd0,
@@ -66,27 +37,19 @@ module fft_512_radix2 #(
     
     reg [2:0] state;
     
-    //==========================================================================
-    // Stage and Butterfly Control
-    //==========================================================================
+
     
-    reg [3:0] stage_count;        // 0-8 for 9 stages
-    reg [8:0] butterfly_count;    // 0-255 butterflies per stage
-    reg [1:0] bf_cycle;           // Butterfly computation cycle (0-1)
+    reg [3:0] stage_count;       
+    reg [8:0] butterfly_count;    
+    reg [1:0] bf_cycle;          
     
-    //==========================================================================
-    // Dual-Port RAM for Ping-Pong Buffering
-    // Bank A and Bank B alternate between read and write each stage
-    //==========================================================================
-    
+ 
     reg signed [DATA_WIDTH-1:0] ram_a_real [0:FFT_SIZE-1];
     reg signed [DATA_WIDTH-1:0] ram_a_imag [0:FFT_SIZE-1];
     reg signed [DATA_WIDTH-1:0] ram_b_real [0:FFT_SIZE-1];
     reg signed [DATA_WIDTH-1:0] ram_b_imag [0:FFT_SIZE-1];
     
-    //==========================================================================
-    // Butterfly Computation Signals
-    //==========================================================================
+
     
     reg signed [DATA_WIDTH-1:0] bf_in_a_real, bf_in_a_imag;
     reg signed [DATA_WIDTH-1:0] bf_in_b_real, bf_in_b_imag;
@@ -102,14 +65,8 @@ module fft_512_radix2 #(
     wire [8:0] stride;      // Distance between butterfly pairs
     wire [8:0] group_size;  // Size of butterfly groups
     
-    //==========================================================================
-    // Butterfly Addressing Calculation
-    // For stage s:
-    //   - Group size = 2^(s+1)
-    //   - Stride (distance between pairs) = 2^s
-    //   - Number of groups = 512 / group_size
-    //   - Butterflies per group = stride
-    //==========================================================================
+   
+    // Butterfly Addressing Calculation using stride
     
     assign stride = 9'd1 << stage_count;           // 2^s
     assign group_size = 9'd1 << (stage_count + 1); // 2^(s+1)
@@ -122,12 +79,9 @@ module fft_512_radix2 #(
     wire [8:0] base_addr = (group_num * group_size) + pos_in_group;
     assign addr_a = base_addr;
     assign addr_b = base_addr + stride;
-    
-    //==========================================================================
+ 
     // Bit Reversal Function for Input Ordering
-    // FFT requires bit-reversed input order for in-place computation
-    //==========================================================================
-    
+
     function [8:0] bit_reverse;
         input [8:0] addr;
         integer i;
@@ -138,9 +92,6 @@ module fft_512_radix2 #(
         end
     endfunction
     
-    //==========================================================================
-    // Instantiate Butterfly Computation Unit
-    //==========================================================================
     
     fft_butterfly #(
         .DATA_WIDTH(DATA_WIDTH)
@@ -159,9 +110,7 @@ module fft_512_radix2 #(
         .out_b_imag(bf_out_b_imag)
     );
     
-    //==========================================================================
-    // Instantiate Twiddle Factor ROM
-    //==========================================================================
+
     
     fft_twiddle_rom #(
         .DATA_WIDTH(DATA_WIDTH),
@@ -173,9 +122,7 @@ module fft_512_radix2 #(
         .twiddle_imag(twiddle_imag)
     );
     
-    //==========================================================================
-    // Main State Machine Control
-    //==========================================================================
+	//main fsm
     
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -255,9 +202,7 @@ module fft_512_radix2 #(
         end
     end
     
-    //==========================================================================
-    // Input Data Loading with Bit Reversal
-    //==========================================================================
+    // input data loading with bit reversal
     
     always @(posedge clk) begin
         if (state == STATE_LOAD && data_in_valid) begin
@@ -267,9 +212,6 @@ module fft_512_radix2 #(
         end
     end
     
-    //==========================================================================
-    // RAM Read Logic for Butterfly Inputs
-    //==========================================================================
     
     // Determine which RAM bank to read from based on stage parity
     wire ram_rd_select = stage_count[0];  // 0=read A, 1=read B
@@ -293,10 +235,6 @@ module fft_512_radix2 #(
             end
         end
     end
-    
-    //==========================================================================
-    // RAM Write Logic for Butterfly Outputs
-    //==========================================================================
     
     // Write to opposite bank from read
     wire ram_wr_select = ~ram_rd_select;  // 0=write A, 1=write B
@@ -331,10 +269,6 @@ module fft_512_radix2 #(
         end
     end
     
-    //==========================================================================
-    // Output Data Read
-    // After final stage, results are in one of the RAM banks
-    //==========================================================================
     
     reg [8:0] output_counter;
     
