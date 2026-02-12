@@ -1,0 +1,8 @@
+//Verilator faced difficulties with multiple time control statements in 1 initial block
+   %Error-UNSUPPORTED: tb/interfaces/tb_i2s.v:45:8: Unsupported: timing control statement in this location: ... Suggest have one timing control statement per procedure, at the top of the procedure   45 |        @(negedge i2s_bclk);
+   
+   
+   
+
+   
+
