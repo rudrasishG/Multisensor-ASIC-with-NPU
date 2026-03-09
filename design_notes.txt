@@ -1,5 +1,11 @@
 //Verilator faced difficulties with multiple time control statements in 1 initial block
-   %Error-UNSUPPORTED: tb/interfaces/tb_i2s.v:45:8: Unsupported: timing control statement in this location: ... Suggest have one timing control statement per procedure, at the top of the procedure   45 |        @(negedge i2s_bclk);
+   %Error-UNSUPPORTED: tb/interfaces/tb_i2s.v:45:8: Unsupported: timing control statement in this location: ... Suggest have one timing control statement per procedure, at the top of the procedure  
+    45 |        @(negedge i2s_bclk);
+
+//Two types of calculations methodologies were used: CORDIC and LUTs. The design constraints for both the techniques are noted and the LUT for the cosine and -sine values 
+will probably be shifted to a CORDIC type calculation given the tight space constraints in my FPGA board
+
+//A bit field extraction issue was faced while appending to the accumulator value so explicit size was mentioned with extra 16 bits making it a total of 33 bits on updating
    
    
    
