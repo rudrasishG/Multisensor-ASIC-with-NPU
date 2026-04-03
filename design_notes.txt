@@ -6,6 +6,9 @@
 will probably be shifted to a CORDIC type calculation given the tight space constraints in my FPGA board
 
 //A bit field extraction issue was faced while appending to the accumulator value so explicit size was mentioned with extra 16 bits making it a total of 33 bits on updating
+
+//The twiddle factor ROM in fft_motion_128 is only for simulation..because the always block cannot be synthesized..will need a $readmemh we'll see 
+
    
    
    
