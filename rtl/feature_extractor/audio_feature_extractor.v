@@ -285,7 +285,7 @@ module audio_feature_extractor #(
             end
             else begin
                 energy_temp <= energy_accumulator [DATA_WIDTH+15:16];
-                energy_valid <= 9'd0;
+                energy_valid <= 1'b1;
                 //reset
                 energy_accumulator <= { (DATA_WIDTH+17) {1'b0}};
                 energy_sample_index <= 9'd0;
